@@ -1,0 +1,42 @@
+Book management project
+
+1)Book: ISBN, TITLE, PUB DATE, Language, number of pages, author[], category[], price.
+2)Aauthor: ID, name, books[].
+3)Publications: ID, name, Books[].
+
+APIs
+1)Books
+to get all the books
+to get specific books
+to get a list of book based on category
+to get a list of book based on Language
+
+2)Author
+to get all author 
+to get a specific author 
+to get a list of author based on books
+
+3)Publications
+to get all Publications
+to get specific Publication
+to get list of Publication based on book
+
+
+POST 
+1) add new book
+2) add new Author
+3) add new Publication
+
+postman is used for api testing
+
+
+
+
+// Mongo DB
+Schema: I is kind of blue-print of how the data constructed
+Mongo DB is schemaless
+Mongoose has schema 
+Mongoose helps in validation, relationship with other data
+Model: it's a document model of MongoDB
+{mongoDB and Mongoose are related to asyncronnys}
+// Schema -> Model -> use them.
