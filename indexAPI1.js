@@ -225,10 +225,13 @@ Parameters     None
 Methods        GET
 */
 
-bookM.post("/author/new", (request,response) => {
-    const newAuthor = request.body;
-    database.author.push(newAuthor);
-    return response.json({newAuthors: database.author});    
+bookM.post("/author/new",async (request,response) => {
+    const { newAuthor } = request.body;
+    const addNewAuthor = AuthorModel.create(newAuthor)
+    return response.json({
+        author: addNewAuthor,
+        message: "New author added...!"
+    });    
 });
 
 /*
