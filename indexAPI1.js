@@ -65,17 +65,15 @@ Parameters     None
 Methods        GET
 */ 
 
-bookM.get("/cat/:category", (request,response) => {
- const getSpecificBook = database.books.filter(
-    (book) => book.category.includes(request.params.category)
- );
+bookM.get("/cat/:category",async (request,response) => {
+    const getSpecificBook = await BookModel.findOne({category: request.params.category});
 
-if(getSpecificBook.length === 0)
+if(!getSpecificBook)
 {
     return response.json({error: `No search found for this book category: ${request.params.category}`});
 }
 
-return response.json({book: getSpecificBook});
+return response.json(getSpecificBook);
 
 });
 /*
@@ -86,16 +84,14 @@ Parameters     None
 Methods        GET
 */ 
 
-bookM.get("/lang/:language", (request,response) => {
-    const getSpecificBook = database.books.filter(
-        (book) => book.language === request.params.language
-    );
+bookM.get("/lang/:language",async (request,response) => {
+    const getSpecificBook = await BookModel.findOne({language: request.params.language});
 
-    if(getSpecificBook.length === 0) {
+    if(!getSpecificBook) {
         return response.json({error: `No book found for this language: ${request.params.language}`});
     }
 
-    return response.json({book: getSpecificBook});
+    return response.json(getSpecificBook);
 });
 
 //API for author
@@ -212,10 +208,13 @@ Parameters     None
 Methods        GET
 */
 
-bookM.post("/books/new", (request,response) => {
-    const newBook = request.body;
-    database.books.push(newBook);
-    return response.json({newBooks: database.books});
+bookM.post("/books/new",async (request,response) => {
+    const { newBook } = request.body;
+    const addNewBook = BookModel.create(newBook);
+    return response.json({
+        books: addNewBook,
+        message: "New Book added...!!!"
+    });
 });
 
 /*
