@@ -146,7 +146,7 @@ bookM.get("/author/books/:isbn",async (request,response) => {
     }
 
     return response.json(getSpecificAuthor);
-})
+});
 
 //API for the publications
 
