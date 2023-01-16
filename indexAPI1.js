@@ -117,16 +117,15 @@ Parameters     None
 Methods        GET
 */
 
-bookM.get("/author/:id", (request,response) => {
-    const getSpecificAuthor = database.author.filter(
-        (author) => author.id === parseInt(request.params.id)
-    );
+bookM.get("/author/:id",async (request,response) => {
+    const getSpecificAuthor = await AuthorModel.findOne({id: request.params.id});
+    
 
-    if(getSpecificAuthor.length === 0) {
+    if(!getSpecificAuthor) {
         return response.json({error: `The author for this id: ${request.params.id} is not found`});
     }
 
-    return response.json({author: getSpecificAuthor});
+    return response.json(getSpecificAuthor);
 });
 
 /*
@@ -137,17 +136,16 @@ Parameters     None
 Methods        GET
 */
 
-bookM.get("/author/book/:isbn", (request,response) => {
-    const getSpecificAuthor = database.author.filter(
-        (author) => author.books.includes(request.params.isbn)
-    );
+bookM.get("/author/books/:isbn",async (request,response) => {
+    const getSpecificAuthor = await AuthorModel.findOne({ISBN: request.params.isbn});
 
-    if(getSpecificAuthor.length === 0)
+
+    if(!getSpecificAuthor)
     {
-        return response.json({error: `No author found for the book: ${request.params.isnb}`});
+        return response.json({error: `No author found for the book: ${request.params.isbn}`});
     }
 
-    return response.json({auhtor: getSpecificAuthor});
+    return response.json(getSpecificAuthor);
 })
 
 //API for the publications
@@ -164,17 +162,16 @@ Parameters     None
 Methods        GET
 */
 
-bookM.get("/publications/:id", (request,response) => {
-    const getSpecificPub = database.publication.filter(
-        (publication) => publication.id === parseInt(request.params.id)
-    );
+bookM.get("/publications/:id",async (request,response) => {
+    const getSpecificPublication = await PublicationModel.findOne({id: request.params.id});
     
-    if(getSpecificPub.length === 0)
+    
+    if(!getSpecificPublication)
     {
         return response.json({error: `No publications found for the id: ${request.params.id}`});
     }
 
-    return response.json({publications: getSpecificPub});
+    return response.json(getSpecificPublication);
 });
 /*
 Route   root route = / or /books
@@ -184,17 +181,16 @@ Parameters     None
 Methods        GET
 */
 
-bookM.get("/publications/books/:isbn", (request,response) => {
-    const getSpecificPub = database.publication.filter(
-        (publication) => publication.books.includes(request.params.isbn)
-    );
-
-    if(getSpecificPub.length === 0)
+bookM.get("/publications/books/:isbn",async (request,response) => {
+    const getSpecificPublication = await PublicationModel.findOne({ISBN: request.params.isbn});
+    
+    
+    if(!getSpecificPublication)
     {
-        return response.json({error: `No publicatins found for this Book: ${request.params.isbn}`});
+        return response.json({error: `No publications found for the Book isbn: ${request.params.isbn}`});
     }
 
-    return response.json({publications: getSpecificPub});
+    return response.json(getSpecificPublication);
 });
 
 
@@ -242,10 +238,13 @@ Parameters     None
 Methods        GET
 */
 
-bookM.post("/publications/new", (request,response) => {
-    const newPublication = request.body;
-    database.publication.push(newPublication);
-    return response.json({newPublications: database.publication});
+bookM.post("/publications/new",async (request,response) => {
+    const { newPublication } = request.body;
+    const addNewPublication = PublicationModel.create(newPublication)
+    return response.json({
+        publication: addNewPublication,
+        message: "New Publication added...!!!"
+    });
 });
 
 // push with some specific if-else condition
@@ -257,6 +256,74 @@ Access         Public
 Parameters     None
 Methods        GET
 */
+
+bookM.put("/book/update/:isbn", async (request,response) => {    
+    const updatedBook = await BookModel.findOneAndUpdate(
+        {
+            ISBN: request.params.isbn
+        },
+        {
+            title: request.body.bookTitle 
+        },
+        {
+            new: true
+        }
+        );
+
+        return response.json({
+            books: updatedBook,
+            message: "Book Updated...!"
+        });
+});
+//updating new Author 
+
+/*
+Route          /book/new
+Description    get all the books
+Access         Public
+Parameters     None
+Methods        GET
+*/
+
+bookM.put("/book/author/update/:isbn",async (request,response) => {
+     //update book database
+    const updatedBook = await BookModel.findOneAndUpdate(
+        {
+            ISBN: request.params.isbn
+        },
+        {
+            $addToSet: {
+                author: request.body.newAuthor
+            }
+        },
+        {
+            new: true
+        }
+    );
+
+    //update author database
+    const updatedAuthor = await AuthorModel.findOneAndUpdate(
+        {
+            id: request.body.newAuthor
+        },
+        {
+            $addToSet: {
+                books: request.params.isbn
+            }
+        },
+        {
+            new: true
+        }
+    );
+
+    return response.json({
+        books: updatedBook,
+        author: updatedAuthor,
+        message: "Both updated successfully...!"
+    })
+});
+
+
 
 bookM.put("/publication/update/book/:isbn", (request,response) => {
     //updation of publication 
@@ -296,14 +363,20 @@ Parameters     None
 Methods        GET
 */
 
-bookM.delete("/book/delete/:isbn", (request,response) => {
-    const updateBookDatabase = database.books.filter(
-        (book) => book.ISBN !== request.params.isbn
-    )
-        database.books = updateBookDatabase;
 
-        return response.json({books: database.books});
+// ------Danger Zonep-------
+bookM.delete("/book/delete/:isbn",async (request,response) => {
+    const updateBookDatabase = await BookModel.findOneAndDelete(
+        {
+            ISBN: request.params.isbn
+        }
+    );      
+        return response.json({
+            books: updateBookDatabase,
+            messgae: "Book Deleted...!!!"
+        });
 });
+
 // delete author from book
 /*
 Route          /book/new
@@ -382,3 +455,6 @@ bookM.listen(3000, () => {
 //     useCreateIndex: true
 // }
 // ).then(() => console.log("Connection Established"));
+
+//Node JS
+// microservices , validation
